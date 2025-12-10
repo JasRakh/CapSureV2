@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Theme, ThemeMode, createTheme } from './index';
@@ -12,19 +18,25 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_STORAGE_KEY = '@pillscan_theme_mode';
+const THEME_STORAGE_KEY = '@capsure_theme_mode';
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const systemColorScheme = useColorScheme();
   const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
   const [isDark, setIsDark] = useState(false);
 
-  // Load saved theme preference
   useEffect(() => {
     const loadTheme = async () => {
       try {
         const savedMode = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-        if (savedMode && (savedMode === 'light' || savedMode === 'dark' || savedMode === 'system')) {
+        if (
+          savedMode &&
+          (savedMode === 'light' ||
+            savedMode === 'dark' ||
+            savedMode === 'system')
+        ) {
           setThemeModeState(savedMode as ThemeMode);
         }
       } catch (error) {
@@ -34,7 +46,6 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     loadTheme();
   }, []);
 
-  // Determine if dark mode should be used
   useEffect(() => {
     if (themeMode === 'system') {
       setIsDark(systemColorScheme === 'dark');
@@ -68,4 +79,3 @@ export const useTheme = (): ThemeContextType => {
   }
   return context;
 };
-

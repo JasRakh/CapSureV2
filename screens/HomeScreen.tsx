@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 
@@ -11,7 +13,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { theme } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={['top']}
+    >
       <View style={styles.content}>
         <View style={styles.header}>
           <Text
@@ -22,7 +27,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               },
             ]}
           >
-            PillScan
+            CapSure
           </Text>
           <Text
             style={[
@@ -38,7 +43,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         <View style={styles.buttonContainer}>
           <PrimaryButton
-            title="Scan a pill"
+            title='Scan a pill'
             onPress={() => navigation.navigate('Scanner')}
             style={styles.scanButton}
           />
@@ -54,8 +59,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               },
             ]}
             onPress={() => navigation.navigate('History')}
+            activeOpacity={0.7}
           >
-            <Text style={styles.quickActionIcon}>📋</Text>
+            <View
+              style={[
+                styles.iconContainer,
+                {
+                  backgroundColor: `${theme.colors.primary}15`,
+                },
+              ]}
+            >
+              <Ionicons
+                name='list-outline'
+                size={24}
+                color={theme.colors.primary}
+              />
+            </View>
             <Text
               style={[
                 styles.quickActionText,
@@ -77,8 +96,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               },
             ]}
             onPress={() => navigation.navigate('Settings')}
+            activeOpacity={0.7}
           >
-            <Text style={styles.quickActionIcon}>⚙️</Text>
+            <View
+              style={[
+                styles.iconContainer,
+                {
+                  backgroundColor: `${theme.colors.primary}15`,
+                },
+              ]}
+            >
+              <Ionicons
+                name='settings-outline'
+                size={24}
+                color={theme.colors.primary}
+              />
+            </View>
             <Text
               style={[
                 styles.quickActionText,
@@ -92,7 +125,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -103,7 +136,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 48,
+    paddingTop: 24,
     justifyContent: 'center',
   },
   header: {
@@ -137,14 +170,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     borderWidth: 1,
+    gap: 12,
   },
-  quickActionIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   quickActionText: {
     fontSize: 14,
     fontWeight: '600',
   },
 });
-

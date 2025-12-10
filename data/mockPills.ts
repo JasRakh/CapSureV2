@@ -1,6 +1,5 @@
 import { Pill } from '../types';
 
-// Mock pill database - in a real app, this would come from an API
 export const mockPills: Partial<Pill>[] = [
   {
     name: 'Ibuprofen 200mg',
@@ -74,13 +73,11 @@ export const mockPills: Partial<Pill>[] = [
   },
 ];
 
-// Simulate pill identification - returns a random pill with confidence score
 export const identifyPill = async (): Promise<Pill> => {
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   const randomPill = mockPills[Math.floor(Math.random() * mockPills.length)];
-  const confidence = 85 + Math.floor(Math.random() * 15); // 85-100%
+  const confidence = 85 + Math.floor(Math.random() * 15);
   
   return {
     id: `pill_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -96,4 +93,3 @@ export const identifyPill = async (): Promise<Pill> => {
     important: randomPill.important,
   };
 };
-

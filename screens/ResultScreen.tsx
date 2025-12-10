@@ -6,6 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { Card } from '../components/Card';
@@ -25,8 +27,19 @@ interface ResultScreenProps {
   };
 }
 
-export const ResultScreen: React.FC<ResultScreenProps> = ({ navigation, route }) => {
-  const { pill } = route.params;
+export const ResultScreen: React.FC<ResultScreenProps> = ({
+  navigation,
+  route,
+}) => {
+  // Convert ISO string back to Date if needed
+  const pillData = route.params.pill;
+  const pill = {
+    ...pillData,
+    scannedAt:
+      pillData.scannedAt instanceof Date
+        ? pillData.scannedAt
+        : new Date(pillData.scannedAt),
+  };
   const { theme } = useTheme();
   const [saved, setSaved] = React.useState(false);
 
@@ -41,7 +54,22 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ navigation, route })
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={['top']}
+    >
+      <TouchableOpacity
+        style={[
+          styles.closeButton,
+          {
+            backgroundColor: theme.colors.surface,
+          },
+        ]}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.7}
+      >
+        <Ionicons name='close' size={24} color={theme.colors.text} />
+      </TouchableOpacity>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -79,7 +107,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ navigation, route })
               ))}
             </View>
 
-            {pill.color || pill.shape || pill.dosage ? (
+            {(pill.color || pill.shape || pill.dosage) && (
               <View style={styles.detailsContainer}>
                 {pill.color && (
                   <View style={styles.detailItem}>
@@ -154,7 +182,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ navigation, route })
                   </View>
                 )}
               </View>
-            ) : null}
+            )}
           </Card>
         </Animated.View>
 
@@ -162,16 +190,20 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ navigation, route })
           <PillInfoSection title="How it's usually used">
             {pill.usage.map((item, index) => (
               <View key={index} style={styles.usageItem}>
-                <Text
+                <View
                   style={[
-                    styles.bullet,
+                    styles.bulletContainer,
                     {
-                      color: theme.colors.primary,
+                      backgroundColor: `${theme.colors.primary}15`,
                     },
                   ]}
                 >
-                  •
-                </Text>
+                  <Ionicons
+                    name='checkmark-circle'
+                    size={16}
+                    color={theme.colors.primary}
+                  />
+                </View>
                 <Text
                   style={[
                     styles.usageText,
@@ -190,13 +222,15 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ navigation, route })
         {pill.important && (
           <Animated.View entering={FadeInUp.duration(500).delay(200)}>
             <Card
-              style={[
-                styles.warningCard,
-                {
-                  backgroundColor: `${theme.colors.warning}15`,
-                  borderColor: theme.colors.warning,
-                },
-              ] as any}
+              style={
+                [
+                  styles.warningCard,
+                  {
+                    backgroundColor: `${theme.colors.warning}15`,
+                    borderColor: theme.colors.warning,
+                  },
+                ] as any
+              }
             >
               <Text
                 style={[
@@ -223,7 +257,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ navigation, route })
         )}
       </ScrollView>
 
-      <View
+      <SafeAreaView
         style={[
           styles.footer,
           {
@@ -231,21 +265,22 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ navigation, route })
             borderTopColor: theme.colors.border,
           },
         ]}
+        edges={['bottom']}
       >
         <PrimaryButton
           title={saved ? 'Saved!' : 'Save to history'}
           onPress={handleSave}
           disabled={saved}
-          variant="secondary"
-          style={[styles.footerButton, saved ? { opacity: 0.6 } : {}] as any}
+          variant='secondary'
+          style={styles.footerButton}
         />
         <PrimaryButton
-          title="Scan another pill"
+          title='Scan another pill'
           onPress={handleScanAnother}
           style={styles.footerButton}
         />
-      </View>
-    </View>
+      </SafeAreaView>
+    </SafeAreaView>
   );
 };
 
@@ -253,11 +288,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 24,
+    paddingTop: 64,
     paddingBottom: 120,
   },
   card: {
@@ -302,10 +354,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 12,
     alignItems: 'flex-start',
+    gap: 12,
   },
-  bullet: {
-    fontSize: 20,
-    marginRight: 12,
+  bulletContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 2,
   },
   usageText: {
@@ -328,7 +384,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 24,
-    paddingBottom: 48,
+    paddingBottom: 0,
     borderTopWidth: 1,
     gap: 12,
   },
@@ -336,4 +392,3 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-

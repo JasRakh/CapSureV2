@@ -1,41 +1,32 @@
 {
   "expo": {
-    "name": "PillScan",
-    "slug": "pillscan",
+    "name": "CapSure",
+    "slug": "capsure",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pillscan.app"
+      "bundleIdentifier": "com.capsure.app"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.pillscan.app"
+      "package": "com.capsure.app",
+      "permissions": ["CAMERA"]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
+    "web": {},
     "plugins": [
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow PillScan to access your camera to scan pills."
+          "cameraPermission": "Allow CapSure to access your camera to scan pills."
         }
       ]
-    ]
+    ],
+    "scheme": "capsure"
   }
 }
-

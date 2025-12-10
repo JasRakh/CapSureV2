@@ -13,4 +13,3 @@ export type MainTabParamList = {
   History: undefined;
   Settings: undefined;
 };
-

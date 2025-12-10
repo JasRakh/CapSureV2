@@ -8,6 +8,8 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { setOnboardingCompleted } from '../utils/storage';
@@ -21,22 +23,29 @@ interface OnboardingScreenProps {
 const onboardingData = [
   {
     title: 'Scan pills with your camera',
-    description: 'Point your camera at any pill or capsule to instantly identify it.',
-    icon: '📷',
+    description:
+      'Point your camera at any pill or capsule to instantly identify it.',
+    icon: 'camera-outline' as keyof typeof Ionicons.glyphMap,
+    color: '#007AFF',
   },
   {
     title: 'Get quick information',
     description: 'Learn about usage, dosage, and important safety information.',
-    icon: '💊',
+    icon: 'medical-outline' as keyof typeof Ionicons.glyphMap,
+    color: '#34C759',
   },
   {
     title: 'Not medical advice',
-    description: 'This app is for informational purposes only. Always consult a healthcare professional.',
-    icon: '⚠️',
+    description:
+      'This app is for informational purposes only. Always consult a healthcare professional.',
+    icon: 'warning-outline' as keyof typeof Ionicons.glyphMap,
+    color: '#FF9500',
   },
 ];
 
-export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
+export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
+  navigation,
+}) => {
   const { theme } = useTheme();
   const [currentPage, setCurrentPage] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -64,7 +73,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={['top', 'bottom']}
+    >
       <ScrollView
         ref={scrollViewRef}
         horizontal
@@ -75,8 +87,15 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }
       >
         {onboardingData.map((item, index) => (
           <View key={index} style={[styles.page, { width }]}>
-            <View style={styles.iconContainer}>
-              <Text style={styles.icon}>{item.icon}</Text>
+            <View
+              style={[
+                styles.iconContainer,
+                {
+                  backgroundColor: `${item.color}15`,
+                },
+              ]}
+            >
+              <Ionicons name={item.icon} size={64} color={item.color} />
             </View>
             <Text
               style={[
@@ -111,19 +130,23 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }
                 styles.dot,
                 {
                   backgroundColor:
-                    index === currentPage ? theme.colors.primary : theme.colors.border,
+                    index === currentPage
+                      ? theme.colors.primary
+                      : theme.colors.border,
                 },
               ]}
             />
           ))}
         </View>
         <PrimaryButton
-          title={currentPage === onboardingData.length - 1 ? 'Get Started' : 'Next'}
+          title={
+            currentPage === onboardingData.length - 1 ? 'Get Started' : 'Next'
+          }
           onPress={handleNext}
           style={styles.button}
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -138,10 +161,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   iconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 32,
-  },
-  icon: {
-    fontSize: 80,
   },
   title: {
     fontSize: 28,
@@ -174,4 +199,3 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-

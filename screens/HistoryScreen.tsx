@@ -8,10 +8,12 @@ import {
   TextInput,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
 import { Card } from '../components/Card';
-import { getPillHistory } from '../utils/storage';
+import { getPillHistory, clearPillHistory } from '../utils/storage';
 import { Pill } from '../types';
 
 interface HistoryScreenProps {
@@ -41,7 +43,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
     if (searchQuery.trim() === '') {
       setFilteredHistory(history);
     } else {
-      const filtered = history.filter(pill =>
+      const filtered = history.filter((pill) =>
         pill.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredHistory(filtered);
@@ -52,6 +54,11 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
     setRefreshing(true);
     await loadHistory();
     setRefreshing(false);
+  };
+
+  const handleClearHistory = async () => {
+    await clearPillHistory();
+    await loadHistory();
   };
 
   const formatDate = (date: Date) => {
@@ -136,34 +143,86 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View
-        style={[
-          styles.searchContainer,
-          {
-            backgroundColor: theme.colors.surface,
-            borderColor: theme.colors.border,
-          },
-        ]}
-      >
-        <Text style={styles.searchIcon}>🔍</Text>
-        <TextInput
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={['top']}
+    >
+      <View style={styles.headerContainer}>
+        <View
           style={[
-            styles.searchInput,
+            styles.searchContainer,
             {
-              color: theme.colors.text,
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
             },
           ]}
-          placeholder="Search by pill name..."
-          placeholderTextColor={theme.colors.textTertiary}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+        >
+          <Ionicons
+            name='search-outline'
+            size={20}
+            color={theme.colors.textTertiary}
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={[
+              styles.searchInput,
+              {
+                color: theme.colors.text,
+              },
+            ]}
+            placeholder='Search by pill name...'
+            placeholderTextColor={theme.colors.textTertiary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+        {filteredHistory.length > 0 && (
+          <TouchableOpacity
+            style={[
+              styles.clearButton,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+              },
+            ]}
+            onPress={handleClearHistory}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name='trash-outline'
+              size={18}
+              color={theme.colors.error || '#FF3B30'}
+            />
+            <Text
+              style={[
+                styles.clearButtonText,
+                {
+                  color: theme.colors.error || '#FF3B30',
+                },
+              ]}
+            >
+              Clear
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {filteredHistory.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>📋</Text>
+          <View
+            style={[
+              styles.emptyIconContainer,
+              {
+                backgroundColor: `${theme.colors.primary}15`,
+              },
+            ]}
+          >
+            <Ionicons
+              name={searchQuery ? 'search-outline' : 'list-outline'}
+              size={48}
+              color={theme.colors.primary}
+            />
+          </View>
           <Text
             style={[
               styles.emptyText,
@@ -183,7 +242,9 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
                   backgroundColor: theme.colors.primary,
                 },
               ]}
+              activeOpacity={0.8}
             >
+              <Ionicons name='camera-outline' size={18} color='#FFFFFF' />
               <Text style={styles.emptyButtonText}>Scan your first pill</Text>
             </TouchableOpacity>
           )}
@@ -204,7 +265,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -212,17 +273,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    gap: 12,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
   },
+  clearButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  clearButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
   searchIcon: {
-    fontSize: 20,
     marginRight: 12,
   },
   searchInput: {
@@ -230,8 +309,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   listContent: {
-    padding: 16,
-    paddingTop: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   historyItem: {
     marginBottom: 12,
@@ -278,9 +357,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 32,
   },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16,
+  emptyIconContainer: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
   },
   emptyText: {
     fontSize: 16,
@@ -288,9 +371,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   emptyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 12,
+    marginTop: 8,
   },
   emptyButtonText: {
     color: '#FFFFFF',
@@ -298,4 +385,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-

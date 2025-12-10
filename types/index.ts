@@ -16,4 +16,3 @@ export interface ScanResult {
   pill: Pill;
   imageUri?: string;
 }
-

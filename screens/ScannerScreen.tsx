@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,16 @@ import {
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
-import { Camera } from 'expo-camera';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { useTheme } from '../theme/ThemeContext';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { identifyPill } from '../data/mockPills';
+import { identifyPillWithGPT } from '../services/openaiService';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const SCAN_AREA_SIZE = width * 0.7;
 
 interface ScannerScreenProps {
@@ -22,66 +25,96 @@ interface ScannerScreenProps {
 export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
   const { theme } = useTheme();
   const [scanning, setScanning] = useState(false);
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
-
-  React.useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
+  const cameraRef = useRef<CameraView | null>(null);
 
   const handleScan = async () => {
-    if (scanning) return;
+    if (scanning || !cameraRef.current) return;
 
     setScanning(true);
     try {
-      // Simulate pill identification
-      const pill = await identifyPill();
-      navigation.navigate('Result', { pill });
-    } catch (error) {
+      // Take a photo using takePictureAsync method from CameraView
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.8,
+        base64: false,
+      });
+
+      if (!photo?.uri) {
+        throw new Error('Failed to capture image');
+      }
+
+      // Optimize image for API (resize if too large)
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        photo.uri,
+        [{ resize: { width: 1024 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      // Identify pill using ChatGPT
+      const pill = await identifyPillWithGPT(manipulatedImage.uri);
+
+      // Convert Date to ISO string for navigation params (fixes serialization warning)
+      const pillForNavigation = {
+        ...pill,
+        scannedAt: pill.scannedAt.toISOString(),
+      };
+
+      navigation.navigate('Result', { pill: pillForNavigation });
+    } catch (error: any) {
       console.error('Error identifying pill:', error);
+      Alert.alert(
+        'Error',
+        error.message || 'Failed to identify pill. Please try again.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setScanning(false);
     }
   };
 
-  if (hasPermission === null) {
+  if (!permission) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+        edges={['top', 'bottom']}
+      >
+        <ActivityIndicator size='large' color={theme.colors.primary} />
+      </SafeAreaView>
     );
   }
 
-  if (hasPermission === false) {
+  if (!permission.granted) {
     return (
-      <View style={[styles.container, styles.centerContent, { backgroundColor: theme.colors.background }]}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          styles.centerContent,
+          { backgroundColor: theme.colors.background },
+        ]}
+        edges={['top', 'bottom']}
+      >
         <Text style={[styles.errorText, { color: theme.colors.text }]}>
           Camera permission is required to scan pills.
         </Text>
         <PrimaryButton
-          title="Grant Permission"
-          onPress={async () => {
-            const { status } = await Camera.requestCameraPermissionsAsync();
-            setHasPermission(status === 'granted');
-          }}
+          title='Grant Permission'
+          onPress={requestPermission}
           style={styles.button}
         />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Camera
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <CameraView
+        ref={cameraRef}
         style={styles.camera}
-        type={'back' as any}
+        facing='back'
         onCameraReady={() => setCameraReady(true)}
       >
         <View style={styles.overlay}>
-          {/* Top overlay */}
           <View
             style={[
               styles.overlaySection,
@@ -90,8 +123,6 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
               },
             ]}
           />
-
-          {/* Middle section with scan area */}
           <View style={styles.middleSection}>
             <View
               style={[
@@ -157,8 +188,6 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
               ]}
             />
           </View>
-
-          {/* Bottom overlay */}
           <View
             style={[
               styles.overlaySection,
@@ -168,7 +197,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
             ]}
           />
         </View>
-      </Camera>
+      </CameraView>
 
       <View
         style={[
@@ -191,7 +220,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
 
         {scanning ? (
           <View style={styles.scanningContainer}>
-            <ActivityIndicator size="large" color={theme.colors.primary} />
+            <ActivityIndicator size='large' color={theme.colors.primary} />
             <Text
               style={[
                 styles.scanningText,
@@ -205,7 +234,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
           </View>
         ) : (
           <PrimaryButton
-            title="Scan"
+            title='Scan'
             onPress={handleScan}
             disabled={!cameraReady}
             style={styles.scanButton}
@@ -228,7 +257,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -346,4 +375,3 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-

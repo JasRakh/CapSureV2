@@ -37,4 +37,3 @@ export const darkColors = {
 };
 
 export type ColorScheme = typeof lightColors;
-

@@ -20,4 +20,3 @@ export const createTheme = (mode: 'light' | 'dark'): Theme => ({
 
 export const lightTheme = createTheme('light');
 export const darkTheme = createTheme('dark');
-

@@ -1,14 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Pill } from '../types';
 
-const HISTORY_STORAGE_KEY = '@pillscan_history';
-const ONBOARDING_KEY = '@pillscan_onboarding_completed';
+const HISTORY_STORAGE_KEY = '@capsure_history';
+const ONBOARDING_KEY = '@capsure_onboarding_completed';
 
 export const savePillToHistory = async (pill: Pill): Promise<void> => {
   try {
     const history = await getPillHistory();
     const updatedHistory = [pill, ...history];
-    await AsyncStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(updatedHistory));
+    await AsyncStorage.setItem(
+      HISTORY_STORAGE_KEY,
+      JSON.stringify(updatedHistory)
+    );
   } catch (error) {
     console.error('Error saving pill to history:', error);
   }
@@ -19,7 +22,6 @@ export const getPillHistory = async (): Promise<Pill[]> => {
     const data = await AsyncStorage.getItem(HISTORY_STORAGE_KEY);
     if (data) {
       const pills = JSON.parse(data);
-      // Convert scannedAt strings back to Date objects
       return pills.map((pill: Pill) => ({
         ...pill,
         scannedAt: new Date(pill.scannedAt),
@@ -57,4 +59,3 @@ export const setOnboardingCompleted = async (): Promise<void> => {
     console.error('Error setting onboarding status:', error);
   }
 };
-

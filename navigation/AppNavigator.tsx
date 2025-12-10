@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
+import {
+  Text,
+  View,
+  ActivityIndicator,
+  StyleSheet,
+  Dimensions,
+  StatusBar,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { getOnboardingCompleted } from '../utils/storage';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -31,7 +40,12 @@ const MainTabs = () => {
           borderTopWidth: 1,
           paddingBottom: 8,
           paddingTop: 8,
-          height: 60,
+          height: 65,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -43,7 +57,9 @@ const MainTabs = () => {
         name='Home'
         component={HomeScreen}
         options={{
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>🏠</Text>,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name='home' size={size || 24} color={color} />
+          ),
           tabBarLabel: 'Home',
         }}
       />
@@ -51,7 +67,9 @@ const MainTabs = () => {
         name='History'
         component={HistoryScreen}
         options={{
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>📋</Text>,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name='list' size={size || 24} color={color} />
+          ),
           tabBarLabel: 'History',
         }}
       />
@@ -59,7 +77,9 @@ const MainTabs = () => {
         name='Settings'
         component={SettingsScreen}
         options={{
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>⚙️</Text>,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name='settings-outline' size={size || 24} color={color} />
+          ),
           tabBarLabel: 'Settings',
         }}
       />
@@ -83,14 +103,34 @@ export const AppNavigator: React.FC = () => {
 
   if (isOnboardingComplete === null) {
     return (
-      <View
-        style={[
-          loadingStyles.container,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
-        <ActivityIndicator size='large' color={theme.colors.primary} />
-      </View>
+      <>
+        <StatusBar hidden={true} />
+        <View
+          style={[
+            loadingStyles.container,
+            { backgroundColor: theme.colors.background },
+          ]}
+        >
+          <SafeAreaView
+            style={loadingStyles.safeArea}
+            edges={['top', 'bottom', 'left', 'right']}
+          >
+            <View style={loadingStyles.content}>
+              <ActivityIndicator size='large' color={theme.colors.primary} />
+              <Text
+                style={[
+                  loadingStyles.text,
+                  {
+                    color: theme.colors.textSecondary,
+                  },
+                ]}
+              >
+                CapSure
+              </Text>
+            </View>
+          </SafeAreaView>
+        </View>
+      </>
     );
   }
 
@@ -127,7 +167,7 @@ export const AppNavigator: React.FC = () => {
         />
         <Stack.Screen
           name='Result'
-          component={ResultScreen as any}
+          component={ResultScreen as React.ComponentType<any>}
           options={{
             presentation: 'card',
           }}
@@ -137,10 +177,32 @@ export const AppNavigator: React.FC = () => {
   );
 };
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 const loadingStyles = StyleSheet.create({
   container: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT + 200,
+    zIndex: 9999,
+    elevation: 9999,
+  },
+  safeArea: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 16,
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginTop: 8,
   },
 });
