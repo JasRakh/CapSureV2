@@ -6,6 +6,7 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<MainTabParamList>;
   Scanner: undefined;
   Result: { pill: Pill };
+  About: undefined;
 };
 
 export type MainTabParamList = {

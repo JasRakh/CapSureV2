@@ -11,10 +11,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
 import { Card } from '../components/Card';
 import { getPillHistory, clearPillHistory } from '../utils/storage';
 import { Pill } from '../types';
+import { Alert } from 'react-native';
 
 interface HistoryScreenProps {
   navigation: any;
@@ -22,6 +24,7 @@ interface HistoryScreenProps {
 
 export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [history, setHistory] = useState<Pill[]>([]);
   const [filteredHistory, setFilteredHistory] = useState<Pill[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,8 +60,20 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
   };
 
   const handleClearHistory = async () => {
-    await clearPillHistory();
-    await loadHistory();
+    Alert.alert(t('history.clearHistory'), t('history.clearConfirm'), [
+      {
+        text: t('history.no'),
+        style: 'cancel',
+      },
+      {
+        text: t('history.yes'),
+        style: 'destructive',
+        onPress: async () => {
+          await clearPillHistory();
+          await loadHistory();
+        },
+      },
+    ]);
   };
 
   const formatDate = (date: Date) => {
@@ -68,10 +83,10 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
+    if (minutes < 1) return t('time.justNow');
+    if (minutes < 60) return t('time.minutesAgo', { count: minutes });
+    if (hours < 24) return t('time.hoursAgo', { count: hours });
+    if (days < 7) return t('time.daysAgo', { count: days });
     return date.toLocaleDateString();
   };
 
@@ -170,7 +185,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
                 color: theme.colors.text,
               },
             ]}
-            placeholder='Search by pill name...'
+            placeholder={t('history.searchPlaceholder')}
             placeholderTextColor={theme.colors.textTertiary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -188,11 +203,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
             onPress={handleClearHistory}
             activeOpacity={0.7}
           >
-            <Ionicons
-              name='trash-outline'
-              size={18}
-              color={theme.colors.error || '#FF3B30'}
-            />
+            <Ionicons name='trash-outline' size={18} color={theme.colors.error || '#FF3B30'} />
             <Text
               style={[
                 styles.clearButtonText,
@@ -201,7 +212,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
                 },
               ]}
             >
-              Clear
+              {t('history.clearHistory')}
             </Text>
           </TouchableOpacity>
         )}
@@ -231,7 +242,17 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
               },
             ]}
           >
-            {searchQuery ? 'No pills found' : 'No scan history yet'}
+            {t('history.emptyTitle')}
+          </Text>
+          <Text
+            style={[
+              styles.emptyDescription,
+              {
+                color: theme.colors.textTertiary,
+              },
+            ]}
+          >
+            {!searchQuery && t('history.emptyDescription')}
           </Text>
           {!searchQuery && (
             <TouchableOpacity
@@ -245,7 +266,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <Ionicons name='camera-outline' size={18} color='#FFFFFF' />
-              <Text style={styles.emptyButtonText}>Scan your first pill</Text>
+              <Text style={styles.emptyButtonText}>{t('history.scanFirst')}</Text>
             </TouchableOpacity>
           )}
         </View>

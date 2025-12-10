@@ -1,13 +1,8 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { Card } from '../components/Card';
@@ -27,20 +22,16 @@ interface ResultScreenProps {
   };
 }
 
-export const ResultScreen: React.FC<ResultScreenProps> = ({
-  navigation,
-  route,
-}) => {
+export const ResultScreen: React.FC<ResultScreenProps> = ({ navigation, route }) => {
   // Convert ISO string back to Date if needed
   const pillData = route.params.pill;
   const pill = {
     ...pillData,
     scannedAt:
-      pillData.scannedAt instanceof Date
-        ? pillData.scannedAt
-        : new Date(pillData.scannedAt),
+      pillData.scannedAt instanceof Date ? pillData.scannedAt : new Date(pillData.scannedAt),
   };
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [saved, setSaved] = React.useState(false);
 
   const handleSave = async () => {
@@ -119,7 +110,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                         },
                       ]}
                     >
-                      Color:
+                      {t('result.color')}:
                     </Text>
                     <Text
                       style={[
@@ -143,7 +134,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                         },
                       ]}
                     >
-                      Shape:
+                      {t('result.shape')}:
                     </Text>
                     <Text
                       style={[
@@ -167,7 +158,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                         },
                       ]}
                     >
-                      Dosage:
+                      {t('result.dosage')}:
                     </Text>
                     <Text
                       style={[
@@ -187,7 +178,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
         </Animated.View>
 
         <Animated.View entering={FadeInUp.duration(500).delay(100)}>
-          <PillInfoSection title="How it's usually used">
+          <PillInfoSection title={t('result.usage')}>
             {pill.usage.map((item, index) => (
               <View key={index} style={styles.usageItem}>
                 <View
@@ -198,11 +189,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                     },
                   ]}
                 >
-                  <Ionicons
-                    name='checkmark-circle'
-                    size={16}
-                    color={theme.colors.primary}
-                  />
+                  <Ionicons name='checkmark-circle' size={16} color={theme.colors.primary} />
                 </View>
                 <Text
                   style={[
@@ -240,7 +227,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                   },
                 ]}
               >
-                Important
+                {t('result.important')}
               </Text>
               <Text
                 style={[
@@ -268,14 +255,14 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
         edges={['bottom']}
       >
         <PrimaryButton
-          title={saved ? 'Saved!' : 'Save to history'}
+          title={saved ? t('result.saved') : t('result.saveToHistory')}
           onPress={handleSave}
           disabled={saved}
           variant='secondary'
           style={styles.footerButton}
         />
         <PrimaryButton
-          title='Scan another pill'
+          title={t('result.scanAnother')}
           onPress={handleScanAnother}
           style={styles.footerButton}
         />
@@ -290,7 +277,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 16,
+    top: 60,
     right: 16,
     width: 40,
     height: 40,

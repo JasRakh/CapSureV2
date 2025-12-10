@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { setOnboardingCompleted } from '../utils/storage';
@@ -20,33 +21,30 @@ interface OnboardingScreenProps {
   navigation: any;
 }
 
-const onboardingData = [
-  {
-    title: 'Scan pills with your camera',
-    description:
-      'Point your camera at any pill or capsule to instantly identify it.',
-    icon: 'camera-outline' as keyof typeof Ionicons.glyphMap,
-    color: '#007AFF',
-  },
-  {
-    title: 'Get quick information',
-    description: 'Learn about usage, dosage, and important safety information.',
-    icon: 'medical-outline' as keyof typeof Ionicons.glyphMap,
-    color: '#34C759',
-  },
-  {
-    title: 'Not medical advice',
-    description:
-      'This app is for informational purposes only. Always consult a healthcare professional.',
-    icon: 'warning-outline' as keyof typeof Ionicons.glyphMap,
-    color: '#FF9500',
-  },
-];
-
-export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
-  navigation,
-}) => {
+export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
+
+  const onboardingData = [
+    {
+      title: t('onboarding.step1Title'),
+      description: t('onboarding.step1Description'),
+      icon: 'camera-outline' as keyof typeof Ionicons.glyphMap,
+      color: '#007AFF',
+    },
+    {
+      title: t('onboarding.step2Title'),
+      description: t('onboarding.step2Description'),
+      icon: 'medical-outline' as keyof typeof Ionicons.glyphMap,
+      color: '#34C759',
+    },
+    {
+      title: t('onboarding.step3Title'),
+      description: t('onboarding.step3Description'),
+      icon: 'warning-outline' as keyof typeof Ionicons.glyphMap,
+      color: '#FF9500',
+    },
+  ];
   const [currentPage, setCurrentPage] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -130,9 +128,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 styles.dot,
                 {
                   backgroundColor:
-                    index === currentPage
-                      ? theme.colors.primary
-                      : theme.colors.border,
+                    index === currentPage ? theme.colors.primary : theme.colors.border,
                 },
               ]}
             />
@@ -140,7 +136,9 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         </View>
         <PrimaryButton
           title={
-            currentPage === onboardingData.length - 1 ? 'Get Started' : 'Next'
+            currentPage === onboardingData.length - 1
+              ? t('onboarding.getStarted')
+              : t('onboarding.next')
           }
           onPress={handleNext}
           style={styles.button}

@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
 import { PrimaryButton } from '../components/PrimaryButton';
+import { CapSureLogo } from '../components/CapSureLogo';
 
 interface HomeScreenProps {
   navigation: any;
@@ -11,14 +13,33 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       edges={['top']}
     >
+      <TouchableOpacity
+        style={styles.infoButton}
+        onPress={() => navigation.navigate('About')}
+        activeOpacity={0.7}
+      >
+        <View
+          style={[
+            styles.infoButtonContainer,
+            {
+              backgroundColor: `${theme.colors.primary}15`,
+            },
+          ]}
+        >
+          <Ionicons name='information-circle' size={24} color={theme.colors.primary} />
+        </View>
+      </TouchableOpacity>
+
       <View style={styles.content}>
         <View style={styles.header}>
+          <CapSureLogo size={100} color={theme.colors.primary} />
           <Text
             style={[
               styles.title,
@@ -27,7 +48,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               },
             ]}
           >
-            CapSure
+            {t('home.title')}
           </Text>
           <Text
             style={[
@@ -37,13 +58,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               },
             ]}
           >
-            Point your camera at a pill to identify it.
+            {t('home.subtitle')}
           </Text>
         </View>
 
         <View style={styles.buttonContainer}>
           <PrimaryButton
-            title='Scan a pill'
+            title={t('home.scanButton')}
             onPress={() => navigation.navigate('Scanner')}
             style={styles.scanButton}
           />
@@ -69,11 +90,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 },
               ]}
             >
-              <Ionicons
-                name='list-outline'
-                size={24}
-                color={theme.colors.primary}
-              />
+              <Ionicons name='list-outline' size={24} color={theme.colors.primary} />
             </View>
             <Text
               style={[
@@ -83,7 +100,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 },
               ]}
             >
-              History
+              {t('common.history')}
             </Text>
           </TouchableOpacity>
 
@@ -106,11 +123,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 },
               ]}
             >
-              <Ionicons
-                name='settings-outline'
-                size={24}
-                color={theme.colors.primary}
-              />
+              <Ionicons name='settings-outline' size={24} color={theme.colors.primary} />
             </View>
             <Text
               style={[
@@ -120,7 +133,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 },
               ]}
             >
-              Settings
+              {t('common.settings')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -146,6 +159,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 42,
     fontWeight: '700',
+    marginTop: 16,
     marginBottom: 12,
   },
   subtitle: {
@@ -183,5 +197,18 @@ const styles = StyleSheet.create({
   quickActionText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  infoButton: {
+    position: 'absolute',
+    top: 60,
+    right: 16,
+    zIndex: 10,
+  },
+  infoButtonContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

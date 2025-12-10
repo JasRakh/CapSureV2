@@ -1,41 +1,55 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
 import { Card } from '../components/Card';
 import { ThemeMode } from '../theme';
+import { saveLanguage, getCurrentLanguage } from '../i18n/config';
 
 interface SettingsScreenProps {
   navigation: any;
 }
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({
-  navigation,
-}) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const { theme, themeMode, setThemeMode, isDark } = useTheme();
+  const { t, i18n } = useTranslation();
+  const [currentLanguage, setCurrentLanguage] = React.useState(getCurrentLanguage());
 
   const themeOptions: { label: string; value: ThemeMode }[] = [
-    { label: 'System', value: 'system' },
-    { label: 'Light', value: 'light' },
-    { label: 'Dark', value: 'dark' },
+    { label: t('settings.system'), value: 'system' },
+    { label: t('settings.light'), value: 'light' },
+    { label: t('settings.dark'), value: 'dark' },
   ];
+
+  const languageOptions: { label: string; value: string; flag: string }[] = [
+    { label: t('settings.english'), value: 'en', flag: '🇺🇸' },
+    { label: t('settings.russian'), value: 'ru', flag: '🇷🇺' },
+    { label: t('settings.uzbek'), value: 'uz', flag: '🇺🇿' },
+  ];
+
+  const handleLanguageChange = async (language: string) => {
+    await saveLanguage(language);
+    setCurrentLanguage(language);
+    // Перезагружаем компонент для применения переводов
+    setTimeout(() => {
+      // Принудительное обновление через изменение состояния
+      setCurrentLanguage(language);
+    }, 100);
+  };
+
+  // Обновляем текущий язык при монтировании
+  useEffect(() => {
+    setCurrentLanguage(getCurrentLanguage());
+  }, []);
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       edges={['top']}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Card style={styles.section}>
           <Text
             style={[
@@ -45,7 +59,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               },
             ]}
           >
-            Appearance
+            {t('settings.appearance')}
           </Text>
           <Text
             style={[
@@ -55,7 +69,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               },
             ]}
           >
-            Choose your preferred theme
+            {t('settings.appearanceDescription')}
           </Text>
 
           <View style={styles.themeOptions}>
@@ -66,13 +80,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   styles.themeOption,
                   {
                     backgroundColor:
-                      themeMode === option.value
-                        ? `${theme.colors.primary}20`
-                        : 'transparent',
+                      themeMode === option.value ? `${theme.colors.primary}20` : 'transparent',
                     borderColor:
-                      themeMode === option.value
-                        ? theme.colors.primary
-                        : theme.colors.border,
+                      themeMode === option.value ? theme.colors.primary : theme.colors.border,
                   },
                 ]}
                 onPress={() => setThemeMode(option.value)}
@@ -81,10 +91,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   style={[
                     styles.themeOptionText,
                     {
-                      color:
-                        themeMode === option.value
-                          ? theme.colors.primary
-                          : theme.colors.text,
+                      color: themeMode === option.value ? theme.colors.primary : theme.colors.text,
                       fontWeight: themeMode === option.value ? '600' : '400',
                     },
                   ]}
@@ -92,11 +99,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   {option.label}
                 </Text>
                 {themeMode === option.value && (
-                  <Ionicons
-                    name='checkmark'
-                    size={20}
-                    color={theme.colors.primary}
-                  />
+                  <Ionicons name='checkmark' size={20} color={theme.colors.primary} />
                 )}
               </TouchableOpacity>
             ))}
@@ -112,7 +115,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               },
             ]}
           >
-            Language
+            {t('settings.language')}
           </Text>
           <Text
             style={[
@@ -122,8 +125,49 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               },
             ]}
           >
-            Coming soon
+            {t('settings.languageDescription')}
           </Text>
+
+          <View style={styles.themeOptions}>
+            {languageOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.themeOption,
+                  {
+                    backgroundColor:
+                      currentLanguage === option.value
+                        ? `${theme.colors.primary}20`
+                        : 'transparent',
+                    borderColor:
+                      currentLanguage === option.value ? theme.colors.primary : theme.colors.border,
+                  },
+                ]}
+                onPress={() => handleLanguageChange(option.value)}
+              >
+                <View style={styles.languageOptionContent}>
+                  <Text style={styles.flag}>{option.flag}</Text>
+                  <Text
+                    style={[
+                      styles.themeOptionText,
+                      {
+                        color:
+                          currentLanguage === option.value
+                            ? theme.colors.primary
+                            : theme.colors.text,
+                        fontWeight: currentLanguage === option.value ? '600' : '400',
+                      },
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </View>
+                {currentLanguage === option.value && (
+                  <Ionicons name='checkmark' size={20} color={theme.colors.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
         </Card>
 
         <Card
@@ -138,11 +182,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           }
         >
           <View style={styles.disclaimerHeader}>
-            <Ionicons
-              name='warning-outline'
-              size={24}
-              color={theme.colors.warning}
-            />
+            <Ionicons name='warning-outline' size={24} color={theme.colors.warning} />
             <Text
               style={[
                 styles.disclaimerTitle,
@@ -151,7 +191,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 },
               ]}
             >
-              Medical Disclaimer
+              {t('settings.medicalDisclaimer')}
             </Text>
           </View>
           <Text
@@ -162,11 +202,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               },
             ]}
           >
-            This app does not replace professional medical advice. Always
-            consult a healthcare professional before taking any medication. The
-            information provided is for educational purposes only and should not
-            be used as a substitute for professional medical consultation,
-            diagnosis, or treatment.
+            {t('settings.disclaimerText')}
           </Text>
         </Card>
 
@@ -179,7 +215,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               },
             ]}
           >
-            Version 1.0.0
+            {t('settings.version')} 1.0.0
           </Text>
         </View>
       </ScrollView>
@@ -220,6 +256,14 @@ const styles = StyleSheet.create({
   },
   themeOptionText: {
     fontSize: 16,
+  },
+  languageOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  flag: {
+    fontSize: 24,
   },
   checkmark: {
     fontSize: 18,

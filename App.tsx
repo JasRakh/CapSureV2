@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider } from './theme/ThemeContext';
 import { AppNavigator } from './navigation/AppNavigator';
+import './i18n/config';
 
 export default function App() {
   return (
@@ -11,7 +12,7 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AppNavigator />
-          <StatusBar style="auto" />
+          <StatusBar style='auto' />
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

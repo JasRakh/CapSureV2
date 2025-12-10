@@ -11,9 +11,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { identifyPillWithGPT } from '../services/openaiService';
+import { identifyPillWithML } from '../data/mockPills';
 
 const { width } = Dimensions.get('window');
 const SCAN_AREA_SIZE = width * 0.7;
@@ -24,6 +25,7 @@ interface ScannerScreenProps {
 
 export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [scanning, setScanning] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
@@ -44,15 +46,15 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
         throw new Error('Failed to capture image');
       }
 
-      // Optimize image for API (resize if too large)
+      // Optimize image for ML model processing (resize if too large)
       const manipulatedImage = await ImageManipulator.manipulateAsync(
         photo.uri,
         [{ resize: { width: 1024 } }],
         { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
       );
 
-      // Identify pill using ChatGPT
-      const pill = await identifyPillWithGPT(manipulatedImage.uri);
+      // Identify pill using ML model
+      const pill = await identifyPillWithML(manipulatedImage.uri);
 
       // Convert Date to ISO string for navigation params (fixes serialization warning)
       const pillForNavigation = {
@@ -63,11 +65,9 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
       navigation.navigate('Result', { pill: pillForNavigation });
     } catch (error: any) {
       console.error('Error identifying pill:', error);
-      Alert.alert(
-        'Error',
-        error.message || 'Failed to identify pill. Please try again.',
-        [{ text: 'OK' }]
-      );
+      Alert.alert(t('scanner.error'), error.message || t('scanner.failedToIdentify'), [
+        { text: t('common.close') },
+      ]);
     } finally {
       setScanning(false);
     }
@@ -95,10 +95,10 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
         edges={['top', 'bottom']}
       >
         <Text style={[styles.errorText, { color: theme.colors.text }]}>
-          Camera permission is required to scan pills.
+          {t('scanner.cameraPermission')}
         </Text>
         <PrimaryButton
-          title='Grant Permission'
+          title={t('scanner.grantPermission')}
           onPress={requestPermission}
           style={styles.button}
         />
@@ -215,7 +215,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
             },
           ]}
         >
-          Place the pill inside the frame
+          {t('scanner.placePill')}
         </Text>
 
         {scanning ? (
@@ -229,22 +229,19 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
                 },
               ]}
             >
-              Identifying pill...
+              {t('scanner.analyzing')}
             </Text>
           </View>
         ) : (
           <PrimaryButton
-            title='Scan'
+            title={t('scanner.scan')}
             onPress={handleScan}
             disabled={!cameraReady}
             style={styles.scanButton}
           />
         )}
 
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.cancelButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.cancelButton}>
           <Text
             style={[
               styles.cancelText,
@@ -253,7 +250,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({ navigation }) => {
               },
             ]}
           >
-            Cancel
+            {t('common.cancel')}
           </Text>
         </TouchableOpacity>
       </View>
